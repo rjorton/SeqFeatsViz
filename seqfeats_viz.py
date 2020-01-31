@@ -246,6 +246,7 @@ def parse_csv(contents, filename, sep_radio, header):
         exit(1)
 
     # If the separator drop drown is CSV / TSV do the corresponding split.
+    content_type, content_string = contents.split(",")
     if sep_radio == "comma_sep":
         content_type, content_string = contents.split(",")
     elif sep_radio == "tab_sep":
@@ -532,9 +533,10 @@ def update_graph(xaxis, yaxis, category, hidden, mval, search_button, logs, nums
     # If any of the three values are not set don't do anything.
     if xaxis is None or yaxis is None or mval is None:
         exit(1)
+    #Commenting out - causing error
     # Redraw the graph if the user hits the clear button.
-    if int(clear_time / 1000) == int(time.time()):
-        search = ""
+    # if int(clear_time / 1000) == int(time.time()):
+    #    search = ""
     # Read the json dataframe stored in the users browser.
     df = pd.read_json(hidden, orient='split')
     if species is None:
