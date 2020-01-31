@@ -247,10 +247,11 @@ def parse_csv(contents, filename, sep_radio, header):
 
     # If the separator drop drown is CSV / TSV do the corresponding split.
     content_type, content_string = contents.split(",")
+
     if sep_radio == "comma_sep":
-        content_type, content_string = contents.split(",")
+        cont_sep = ","
     elif sep_radio == "tab_sep":
-        content_type, content_string = contents.split("\t")
+        cont_sep = "\t"
 
     # Decode the file
     decoded = base64.b64decode(content_string)
@@ -258,9 +259,9 @@ def parse_csv(contents, filename, sep_radio, header):
     # Make a data frame with pandas
     # Check if the user has specified a header or not.
     if header == "header_1":
-        df = pd.read_csv(io.StringIO(decoded.decode('utf8')), header=0)
+        df = pd.read_csv(io.StringIO(decoded.decode('utf8')), header=0, sep=cont_sep)
     else:
-        df = pd.read_csv(io.StringIO(decoded.decode('utf8')), header=None)
+        df = pd.read_csv(io.StringIO(decoded.decode('utf8')), header=None, sep=cont_sep)
 
         # If there is no header make a new header like this
         # Column 1 Column 2 etc, etc
