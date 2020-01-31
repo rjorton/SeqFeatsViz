@@ -247,7 +247,7 @@ def parse_csv(contents, filename, sep_radio, header):
 
     # If the separator drop drown is CSV / TSV do the corresponding split.
     content_type, content_string = contents.split(",")
-
+    cont_sep = ","
     if sep_radio == "comma_sep":
         cont_sep = ","
     elif sep_radio == "tab_sep":
@@ -395,7 +395,7 @@ def update_multi(data):
 )
 def update_x_value(data):
     names = json.loads(data)
-    return [i for i in names[3:]]
+    return [i for i in names[3:] if i.startswith("Desc")]
 
 
 # XAXIS
@@ -534,10 +534,12 @@ def update_graph(xaxis, yaxis, category, hidden, mval, search_button, logs, nums
     # If any of the three values are not set don't do anything.
     if xaxis is None or yaxis is None or mval is None:
         exit(1)
-    #Commenting out - causing error
+
     # Redraw the graph if the user hits the clear button.
-    # if int(clear_time / 1000) == int(time.time()):
-    #    search = ""
+    if clear_time is not None:
+        if int(clear_time / 1000) == int(time.time()):
+            search = ""
+            
     # Read the json dataframe stored in the users browser.
     df = pd.read_json(hidden, orient='split')
     if species is None:
@@ -708,16 +710,15 @@ def update_graph(xaxis, yaxis, category, hidden, mval, search_button, logs, nums
 
 @app.callback(
     Output('dtable_div', 'children'),
-    [Input('Scatter-Graph', 'clickData'),
-     Input('Scatter-Graph', 'selectedData')],
+    [Input('Scatter-Graph', 'clickData'), Input('Scatter-Graph', 'selectedData')],
     [State('multi_drop', 'value'),
      State('xaxis_drop', 'value'),
      State('yaxis_drop', 'value'),
      State('ensmbl_drop', 'value'),
      State('ncbi_drop', 'value')]
-
-
 )
+
+
 # Update the table with data from either / both of a box / lassoo select or a click.
 def update_table(clicked, selected,  mval, xval, yval, ensmbl, ncbi):
 
