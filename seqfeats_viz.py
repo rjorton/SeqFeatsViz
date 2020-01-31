@@ -71,9 +71,9 @@ app.layout = html.Div([
      ], style={'background-color': '#E6E6E6', 'border-style': 'solid', 'border-width': '2px'}, className='row'),
     html.Div([
         html.Div([
-            html.Label('File seperator'),
+            html.Label('Field Separator'),
             dcc.Dropdown(
-                id='radio_button',
+                id='sep_drop',
                 options=[
                     {'label': 'TSV', 'value': 'tab_sep'},
                     {'label': 'CSV', 'value': 'comma_sep'}
@@ -82,7 +82,7 @@ app.layout = html.Div([
             )
         ], className='one columns'),
         html.Div([
-            html.Label('Header row?'),
+            html.Label('Header Row'),
             dcc.Dropdown(
                 id='header_drop',
                 options=[
@@ -110,80 +110,79 @@ app.layout = html.Div([
                'textAlign': 'center',
                'margin': '30px',
                'background-color': '#FEFEFE'
-
             },
            )
         ], id='hidden_upload', style={'visibility': 'hidden'})
     ], className='row'),
     html.Div([
         html.Div([
-            html.Label('X-Axis coords'),
+            html.Label('X-Values'),
             dcc.Dropdown(
                 id='xaxis_drop'
             )
         ], className='two columns'),
         html.Div([
-            html.Label('Y-Axis coords'),
+            html.Label('Y-Values'),
             dcc.Dropdown(
                 id='yaxis_drop'
             )
         ], className='two columns'),
         html.Div([
-            html.Label('Category'),
+            html.Label('Series'),
             dcc.Dropdown(
-                id='category_drop'
+                id='series_drop'
             )
         ], className='two columns'),
         html.Div([
-            html.Label('Text column(s)'),
-            dcc.Dropdown(
-                id='multi_drop',
-                multi=True,
-
-            )
-        ], className='three columns'),
-        html.Div([
             html.Label('Filter Column'),
             dcc.Dropdown(
-                id='species_drop'
+                id='filter_drop'
             )
-        ], className='one column'),
+        ], className='two columns'),
         html.Div([
             html.Label('Filter Value'),
             dcc.Dropdown(
-                id='species_graph'
+                id='filter_value'
             )
         ], className='two columns')
     ], id='main_div', style={'visibility': 'hidden'}, className='row'),
     #
     html.Div([
         html.Div([
-            html.Label('Ensembl column'),
+            html.Label('GenBank-Accession'),
             dcc.Dropdown(
-                id='ensmbl_drop',
+                id='genbank_drop',
                 value="N/A"
             )
-        ], id='ensmbl_div', className='three columns'),
+        ], id='ncbi_div', className='two columns'),
         html.Div([
-            html.Label('Accession numbers'),
+            html.Label('Ensembl-ID'),
             dcc.Dropdown(
-                id='ncbi_drop',
+                id='ensembl_drop',
                 value="N/A"
             )
-        ], id='ncbi_div', className='three columns'),
+        ], id='ensembl_div', className='two columns'),
         html.Div([
-            html.Label('Log transform axes'),
+            html.Label('Log axes'),
             dcc.Dropdown(
-                id='log_trans'
+                id='log_drop'
             )
-        ], className='three columns'),
+        ], className='two columns'),
         html.Div([
             html.Label('Sort numerical'),
             dcc.Dropdown(
-                id='num_trans'
+                id='sort_drop'
             )
-        ], className='three columns'),
+        ], className='two columns'),
+        html.Div([
+            html.Label('Search-In'),
+            dcc.Dropdown(
+                id='searchin_drop',
+                multi=True,
+            )
+        ], className='four columns'),
     ], id='ncbi_hidden_div', style={'visibility': 'hidden'}, className='row'),
+    #
     html.Div([
         html.Div([
             dcc.Graph(
@@ -249,6 +248,7 @@ def parse_csv(contents, filename, sep_radio, header):
 
     # If the separator drop drown is CSV / TSV do the corresponding split.
     content_type, content_string = contents.split(",")
+
     cont_sep = ","
     if sep_radio == "comma_sep":
         cont_sep = ","
@@ -277,8 +277,8 @@ def parse_csv(contents, filename, sep_radio, header):
 
 
 @app.callback(
-    Output('ensmbl_drop', 'options'),
-    [Input('multi_drop', 'value')]
+    Output('ensembl_drop', 'options'),
+    [Input('searchin_drop', 'value')]
 )
 def update_ensemble(drop):
     if drop is None or len(drop) == 0:
@@ -288,10 +288,10 @@ def update_ensemble(drop):
 
 
 @app.callback(
-    Output('ensmbl_div', 'style'),
-    [Input('multi_drop', 'value')]
+    Output('ensembl_div', 'style'),
+    [Input('searchin_drop', 'value')]
 )
-def show_ensmble(drop):
+def show_ensembl(drop):
     if drop is None or len(drop) == 0:
         exit(1)
     else:
@@ -301,8 +301,8 @@ def show_ensmble(drop):
 #
 
 @app.callback(
-    Output('ncbi_drop', 'options'),
-    [Input('multi_drop', 'value')]
+    Output('genbank_drop', 'options'),
+    [Input('searchin_drop', 'value')]
 )
 def update_ncbi(drop):
     if drop is None or len(drop) == 0:
@@ -313,7 +313,7 @@ def update_ncbi(drop):
 
 @app.callback(
     Output('ncbi_div', 'style'),
-    [Input('multi_drop', 'value')]
+    [Input('searchin_drop', 'value')]
 )
 def show_ncbi(drop):
     if drop is None or len(drop) == 0:
@@ -325,7 +325,7 @@ def show_ncbi(drop):
 # Call back to show upload after values set
 @app.callback(
     Output('hidden_upload', 'style'),
-    [Input('radio_button', 'value'),
+    [Input('sep_drop', 'value'),
      Input('header_drop', 'value')]
 )
 def show_upload(v1, v2):
@@ -339,7 +339,7 @@ def show_upload(v1, v2):
 @app.callback(
     Output('hidden_data', 'children'),
     [Input("csv-upload", "contents"), Input("csv-upload", "filename")],
-    [State("radio_button", 'value'), State("header_drop", 'value')]
+    [State("sep_drop", 'value'), State("header_drop", 'value')]
 )
 def get_file(file_contents, file_name, radio, header):
     df = parse_csv(file_contents, file_name, radio, header)
@@ -381,7 +381,7 @@ def show_main_div(data):
 # Callbacks to populate drop downs
 # CATEGORY
 @app.callback(
-    Output('multi_drop', 'options'),
+    Output('searchin_drop', 'options'),
     [Input('hidden_header', 'children')]
 )
 def update_multi(data):
@@ -392,12 +392,12 @@ def update_multi(data):
 
 
 @app.callback(
-    Output('multi_drop', 'value'),
+    Output('searchin_drop', 'value'),
     [Input('hidden_header', 'children')]
 )
 def update_x_value(data):
     names = json.loads(data)
-    return [i for i in names[3:] if i.startswith("Desc")]
+    return [i for i in names[3:] if i.lower().startswith("desc") or i.lower().startswith("ensembl") or i.lower().startswith("genbank") or i.lower().startswith("accession")]
 
 
 # XAXIS
@@ -425,7 +425,7 @@ def update_x_value(data):
 
 
 @app.callback(
-    Output('species_drop', 'options'),
+    Output('filter_drop', 'options'),
     [Input('hidden_header', 'children')]
 )
 def update_spec_drop(data):
@@ -434,8 +434,8 @@ def update_spec_drop(data):
 
 
 @app.callback(
-    Output('species_graph', 'options'),
-    [Input('species_drop', 'value'),
+    Output('filter_value', 'options'),
+    [Input('filter_drop', 'value'),
      Input('hidden_data', 'children')]
 )
 def update_spec_graph(val, data):
@@ -466,7 +466,7 @@ def update_x_value(data):
 
 # CATEGORY
 @app.callback(
-    Output('category_drop', 'options'),
+    Output('series_drop', 'options'),
     [Input('hidden_header', 'children')]
 )
 def update_cat_drop(data):
@@ -476,7 +476,7 @@ def update_cat_drop(data):
 
 
 @app.callback(
-    Output('category_drop', 'value'),
+    Output('series_drop', 'value'),
     [Input('hidden_header', 'children')]
 )
 def update_x_value(data):
@@ -485,7 +485,7 @@ def update_x_value(data):
 
 
 @app.callback(
-    Output('log_trans', 'options'),
+    Output('log_drop', 'options'),
     [Input('xaxis_drop', 'value'),
      Input('yaxis_drop', 'value')]
 )
@@ -501,7 +501,7 @@ def update_logs(x, y):
 
 
 @app.callback(
-    Output('num_trans', 'options'),
+    Output('sort_drop', 'options'),
     [Input('xaxis_drop', 'value'),
      Input('yaxis_drop', 'value')]
 )
@@ -518,16 +518,16 @@ def update_numeric(x, y):
     Output('Scatter-Graph', 'figure'),
     [Input('xaxis_drop', 'value'),
      Input('yaxis_drop', 'value'),
-     Input('category_drop', 'value'),
+     Input('series_drop', 'value'),
      Input('hidden_data', 'children'),
-     Input('multi_drop', 'value'),
+     Input('searchin_drop', 'value'),
      Input('search_button', 'n_clicks'),
-     Input('log_trans', 'value'),
-     Input('num_trans', 'value'),
-     Input('species_graph', 'value'),
+     Input('log_drop', 'value'),
+     Input('sort_drop', 'value'),
+     Input('filter_value', 'value'),
      Input('clear_search', 'n_clicks_timestamp')],
     [State('search_box', 'value'),
-     State('species_drop', 'value')]
+     State('filter_drop', 'value')]
 
 )
 # Gets input values from all of the drop down menus.
@@ -713,16 +713,16 @@ def update_graph(xaxis, yaxis, category, hidden, mval, search_button, logs, nums
 @app.callback(
     Output('dtable_div', 'children'),
     [Input('Scatter-Graph', 'clickData'), Input('Scatter-Graph', 'selectedData')],
-    [State('multi_drop', 'value'),
+    [State('searchin_drop', 'value'),
      State('xaxis_drop', 'value'),
      State('yaxis_drop', 'value'),
-     State('ensmbl_drop', 'value'),
-     State('ncbi_drop', 'value')]
+     State('ensembl_drop', 'value'),
+     State('genbank_drop', 'value')]
 )
 
 
 # Update the table with data from either / both of a box / lassoo select or a click.
-def update_table(clicked, selected,  mval, xval, yval, ensmbl, ncbi):
+def update_table(clicked, selected,  mval, xval, yval, ensembl, genbank):
 
     # A funciton to populate a table and add hyper links into it.
     def table(frame, eb, nc, xaxis):
@@ -738,9 +738,9 @@ def update_table(clicked, selected,  mval, xval, yval, ensmbl, ncbi):
                 # For each column make a value as this row/col in the df
                 value = frame.iloc[i][col]
 
-                # If the column in the df is the one the user stated as the ensmble col
+                # If the column in the df is the one the user stated as the ensembl col
                 # make it a hyper link.
-                # Same goes for ncbi.
+                # Same goes for genbank.
                 if col == eb:
                     # value = value.replace("'", "")
                     cell = html.Td(
@@ -753,7 +753,7 @@ def update_table(clicked, selected,  mval, xval, yval, ensmbl, ncbi):
                             href="https://www.ncbi.nlm.nih.gov/nuccore/"+value, target='_blank', children=value
                         )
                     )
-                # If its not an ensmle or ncbi column dont add a hyper link.
+                # If its not an ensembl or genbank column dont add a hyper link.
                 else:
                     cell = cell = html.Td(children=value)
                 # Append cell values to the row
@@ -786,7 +786,7 @@ def update_table(clicked, selected,  mval, xval, yval, ensmbl, ncbi):
 
         # If there;s no extra data columns we can return at this point.
         if "N/A" in mval:
-            return table(df, ensmbl, ncbi, xval)
+            return table(df, ensembl, genbank, xval)
 
         # If there is text. For the json of EACH point look at specific indices for the
         # correct text to print to screen.
@@ -808,7 +808,7 @@ def update_table(clicked, selected,  mval, xval, yval, ensmbl, ncbi):
 
         for i in val_dict:
             df[str(i)] = val_dict[i]
-        return table(df, ensmbl, ncbi, xval)
+        return table(df, ensembl, genbank, xval)
 
     else:
         coords = json.dumps(clicked, indent=2)
@@ -819,14 +819,14 @@ def update_table(clicked, selected,  mval, xval, yval, ensmbl, ncbi):
         data = {str(xval): [xcoord], str(yval): [ycoord]}
         df = pd.DataFrame(data=data)
         if "N/A" in mval:
-            return table(df, ensmbl, ncbi, xval)
+            return table(df, ensembl, genbank, xval)
         for en, i in enumerate(mval):
             try:
                 df[str(i)] = coords['points']['text'].split("',")[en].replace("'", "")
             except IndexError:
                 df[str(i)] = coords['points']['text'].split(",")[en].replace("'", "")
 
-        return table(df, ensmbl, ncbi, xval)
+        return table(df, ensembl, genbank, xval)
 
 
 # Callbacks to clear table
