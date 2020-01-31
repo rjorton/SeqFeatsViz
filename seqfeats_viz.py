@@ -77,7 +77,8 @@ app.layout = html.Div([
                 options=[
                     {'label': 'TSV', 'value': 'tab_sep'},
                     {'label': 'CSV', 'value': 'comma_sep'}
-                ]
+                ],
+                value='tab_sep'
             )
         ], className='one columns'),
         html.Div([
@@ -87,7 +88,8 @@ app.layout = html.Div([
                 options=[
                     {'label': 'Yes', 'value': 'header_1'},
                     {'label': 'No', 'value': 'header_0'}
-                ]
+                ],
+                value='header_1'
             )
         ], className='one columns'),
         html.Div([
@@ -141,13 +143,13 @@ app.layout = html.Div([
             )
         ], className='three columns'),
         html.Div([
-            html.Label('Dataset'),
+            html.Label('Filter Column'),
             dcc.Dropdown(
                 id='species_drop'
             )
         ], className='one column'),
         html.Div([
-            html.Label('Dataset Options'),
+            html.Label('Filter Value'),
             dcc.Dropdown(
                 id='species_graph'
             )
@@ -539,7 +541,7 @@ def update_graph(xaxis, yaxis, category, hidden, mval, search_button, logs, nums
     if clear_time is not None:
         if int(clear_time / 1000) == int(time.time()):
             search = ""
-            
+
     # Read the json dataframe stored in the users browser.
     df = pd.read_json(hidden, orient='split')
     if species is None:
