@@ -16,6 +16,7 @@ app = dash.Dash()
 pd.set_option('display.expand_frame_repr', False)
 # CSS is taken from this video https://www.youtube.com/watch?v=f2qUWgq7fb8&feature=youtu.be
 # and app layout is somewhat similar.
+app.css.config.serve_locally = False
 app.css.append_css({'external_url': 'https://codepen.io/amyoshino/pen/jzXypZ.css'})
 # app.scripts.config.serve_locally = True
 
